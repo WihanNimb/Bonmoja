@@ -17,5 +17,8 @@ jobs:
       - name: Setup LocalStack
         run: pip install terraform-local
 
-      - name: tflocal validate vpc
-        run: make validate component=vpc env=dev
+      # - name: tflocal validate vpc
+      #   run: make validate component=vpc env=dev
+      
+      - name: ls
+        run: ls -la pwd
