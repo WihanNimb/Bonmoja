@@ -1,0 +1,149 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description:
+  This Cloudformation template creates an S3 bucket for Terraform S3 State.
+
+Parameters:
+  Name:
+    Description: 
+      Name of the S3 bucket. Defaults to "terraform-state-AWS_ACCOUNT_ID" if left empty
+    Default: ""
+    Type: String
+  NoncurrentVersionExpirationInDays:
+    Description: Number of days after which older state versions are purged
+    Default: 90
+    Type: Number
+
+Conditions:
+  GenerateNames: !Equals [!Ref Name, ""]
+
+Resources:
+  KMSKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: Terraform state backend
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: "2012-10-17"
+        Id: backend
+        Statement:
+        - Sid: EnableKeyManagement
+          Effect: Allow
+          Principal:
+            AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+          NotAction:
+          - kms:Encrypt
+          - kms:Decrypt
+          - kms:ReEncrypt*
+          - kms:GenerateDataKey*
+          Resource: '*'
+        - Sid: AllowStateBackend
+          Effect: Allow
+          Principal:
+            AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+          Action:
+          - kms:Encrypt
+          - kms:Decrypt
+          - kms:ReEncrypt*
+          - kms:GenerateDataKey*
+          Resource: '*'
+          Condition:
+            StringEquals:
+              "kms:ViaService":
+              - !Sub "s3.${AWS::Region}.amazonaws.com"
+
+  TerraformStateAccessPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Policy to allow access to Terraform state backend in S3 and KMS
+      ManagedPolicyName: !If
+        - GenerateNames
+        - !Sub "terraform-state-access-${AWS::AccountId}"
+        - !Sub "terraform-state-access-${AWS::AccountId}-${Name}"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: ListStateObjects
+            Effect: Allow
+            Action:
+              - s3:ListBucket
+            Resource: !GetAtt StateBucket.Arn
+          - Sid: UpdateStateObjects
+            Effect: Allow
+            Action:
+              - s3:GetObject
+              - s3:PutObject
+              - s3:DeleteObject
+            Resource: !Sub
+              - "${Arn}/*"
+              - Arn: !GetAtt StateBucket.Arn
+          - Sid: DecryptState
+            Effect: Allow
+            Action:
+              - kms:DescribeKey
+              - kms:Encrypt
+              - kms:Decrypt
+              - kms:ReEncrypt*
+              - kms:GenerateDataKey
+              - kms:GenerateDataKeyWithoutPlaintext
+            Resource: !GetAtt KMSKey.Arn
+
+  StateBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      AccessControl: Private
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: aws:kms
+              KMSMasterKeyID: !Ref KMSKey
+      BucketName: !If
+      - GenerateNames
+      - !Sub "terraform-state-${AWS::AccountId}"
+      - !Sub "terraform-state-${AWS::AccountId}-${Name}"
+      LifecycleConfiguration:
+        Rules:
+        - Id: ExpireOldVersions
+          NoncurrentVersionExpirationInDays: !Ref NoncurrentVersionExpirationInDays
+          Status: Enabled
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W35
+            reason: Access logs are managed via Cloudtrail
+
+  StateBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref StateBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+        - Sid: RequireObjectEncryption
+          Effect: Deny
+          Action:
+          - s3:PutObject
+          Principal: "*"
+          Resource: !Sub "${StateBucket.Arn}/*"
+          Condition:
+            StringNotEquals:
+              "s3:x-amz-server-side-encryption-aws-kms-key-id": !GetAtt KMSKey.Arn
+
+Outputs:
+  KmsKeyId:
+    Description: ID of the KMS key used to encrypt Terraform state
+    Value: !GetAtt KMSKey.Arn
+  StateBucketName:
+    Description: Name of the S3 bucket containing Terraform state
+    Value: !Ref StateBucket
+  TerraformStatePolicyArn:
+    Description: ARN of the managed policy for Terraform backend
+    Value: !Ref TerraformStateAccessPolicy
+    Export:
+      Name: TerraformBackendPolicy
