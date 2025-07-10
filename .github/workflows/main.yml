@@ -14,11 +14,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup LocalStack
-        run: pip install terraform-local
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
 
-      # - name: tflocal validate vpc
-      #   run: make validate component=vpc env=dev
+      - name: Terraform validate
+        run: make validate component=vpc env=dev
+
       
-      - name: ls
-        run: ls -la pwd
