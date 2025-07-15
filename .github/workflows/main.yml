@@ -35,7 +35,7 @@ jobs:
       - name: start local LocalStack
         run: |
           localstack start -d
-          awslocal cloudformation create-stack --stack-name state-stack --template-body file://aws_dependancies/state-stack.yml
+          awslocal cloudformation wait create-stack --stack-name state-stack --template-body file://aws_dependancies/state-stack.yml
           make apply_all env=dev
           curl http://localhost:5678/  
 
