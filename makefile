@@ -61,6 +61,11 @@ BACKEND_FILE := backend/$(env)-backend.tf
 define terraform_apply
 	cd components/$(1); \
 	cp $(BACKEND_FILE) .; \
+	KMS_ARN=$$(awslocal cloudformation describe-stacks \
+		--stack-name state-stack \
+		--query "Stacks[0].Outputs[?OutputKey=='KmsKeyId'].OutputValue" \
+		--output text); \
+	sed -i "s|^ *kms_key_id *= *.*|    kms_key_id = \"$$KMS_ARN\"|" $(env)-backend.tf; \
 	terraform init -upgrade -reconfigure; \
 	terraform apply -input=false -var-file="$(TFVARS_FILE)" -auto-approve; \
 	EXIT_CODE=$$?; \
