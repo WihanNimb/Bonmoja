@@ -156,7 +156,7 @@ This allows you to reuse the same infrastructure code across multiple environmen
 > ℹ️ The Makefile automatically waits for the `KmsKeyId` output from CloudFormation and injects it into the backend configuration before initialization. This ensures secure remote state handling per module.
 
 ---
-### 🧭 Architecture Overview
+## 🧭 Architecture Overview
 
 ![Architecture Diagram](.assets/architecture.png)
 
@@ -168,7 +168,7 @@ The diagram illustrates a local AWS-like development environment using LocalStac
   - **CloudWatch Alarms** are configured to monitor key metrics such as high CPU usage (RDS) and high queue depth (SQS).
 
 - **Messaging System**:
-  - A decoupled communication pattern is represented via an **SNS Topic** and **SQS Queue** connected by a subscription.
+  - A decoupled communication pattern is represented via an **SNS Topic** and **SQS Queue**.
 
 - **Session Store**:
   - **DynamoDB** is set up to serve as a simple key-value store (e.g., for session data).
@@ -177,7 +177,7 @@ The diagram illustrates a local AWS-like development environment using LocalStac
 
 This architectural layout serves as a foundation to demonstrate infrastructure-as-code, monitoring setup, and modular deployments within a simulated AWS environment.
 
-### 💡 Rationale
+## 💡 Rationale
 
 This project demonstrates a modular, infrastructure-as-code approach using Terraform to provision a cloud-native stack in a local development environment with LocalStack.
 
