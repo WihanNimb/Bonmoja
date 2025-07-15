@@ -19,7 +19,9 @@ jobs:
         uses: hashicorp/setup-terraform@v3
 
       - name: install localstacks
-        run: pip install --upgrade localstack
+        run: |
+          pip install --upgrade localstack
+          pip install awscli-local
 
       - name: export auth token
         run: export LOCALSTACK_AUTH_TOKEN="ls-lobifEKi-xIwa-KefA-3555-bEFo66139c56"
@@ -31,10 +33,13 @@ jobs:
           export AWS_DEFAULT_REGION="sa-east-1"
 
       - name: start local LocalStack
-        run: |
-          localstack start &
-          echo "Terraform Validate"
-          make apply component=vpc env=dev
+        run: localstack start -d
+
+      - name: create S3 bucket for Terraform state
+        run: awslocal cloudformation create-stack --stack-name state-stack --template-body file://aws_dependancies/state-stack.yml  
 
       - name: Terraform Validate
         run: make validate component=vpc env=dev
+
+      - name: Terraform apply
+        run: make apply component=vpc env=dev
