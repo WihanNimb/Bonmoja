@@ -41,16 +41,30 @@ Security groups are tightly configured:
 
 ---
 
-## Cost Optimization
+# AWS Cost Optimization
 
-### Recommended Actions:
-- **Use AWS Savings Plans** for consistent ECS/RDS usage
-- **Enable storage autoscaling** for RDS (already configured)
+## AWS Cost-Saving Strategies
 
-### Example: RDS Cost Optimization
-- Use `db.t3.micro` with auto-scaling storage and reserved capacity
-- Disable multi-AZ for dev/testing (enabled in production)
-- Use deletion protection cautiously (disabled here for CI/CD speed)
+1. **Use Spot Instances / Spot Tasks**
+   - **What it is:** Spot instances are spare EC2 capacity offered at up to 90% discount compared to On-Demand pricing. Similarly, ECS supports running tasks on Spot capacity.
+   - **Trade-offs:** Spot instances can be interrupted by AWS with a 2-minute warning, so they are best suited for fault-tolerant, stateless, or batch workloads. Critical or stateful workloads may face disruption and require fallback strategies.
+
+2. **Leverage Savings Plans or Reserved Instances**
+   - **What it is:** Savings Plans offer significant discounts (up to 72%) in exchange for a commitment to use a consistent amount of compute (e.g., EC2 or Fargate) for 1 or 3 years. Reserved Instances are similar commitments specific to EC2 instance types.
+   - **Trade-offs:** Savings Plans require upfront commitment and less flexibility if your usage patterns change. Early termination or scaling down doesn’t refund the commitment, so it requires good forecasting.
+
+---
+
+## Cost Optimization for RDS
+
+**Strategy: Use Reserved Instances and Right-Size Your Database**
+
+- **Reserved Instances:** Purchase RDS Reserved Instances (or Savings Plans for RDS) to reduce hourly costs by up to 60-70% compared to On-Demand.
+- **Right-sizing:** Regularly monitor your RDS instance CPU, memory, and IOPS usage, and downscale to a smaller instance size if your workload allows. Use Amazon RDS Performance Insights and CloudWatch metrics for this.
+- **Storage Optimization:** Use General Purpose (SSD) storage instead of Provisioned IOPS if your workload is not I/O-intensive.
+- **Pause/Resume:** For development or test databases, use Aurora Serverless or pause the instance during idle times to avoid charges.
+- **Trade-offs:** Committing to Reserved Instances requires accurate usage forecasting. Downscaling may reduce performance during peak loads, so monitoring and testing are important.
+
 
 ---
 

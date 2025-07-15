@@ -2,11 +2,6 @@ SHELL := /bin/bash
 
 .PHONY: apply destroy
 
-init:
-	export TF_REGISTRY_CLIENT_TIMEOUT=20; \
-	cd components/${component}; \
-	cp ../../variables.tf .
-
 validate:
 	cd components/${component}; \
 	cp backend/${env}-backend.tf .; \
@@ -85,25 +80,24 @@ define terraform_apply
 	fi
 endef
 
-
-# Macro to run terraform destroy in a given module
-define terraform_destroy
-	cd components/$(1); \
-	cp $(BACKEND_FILE) .; \
-	terraform init -upgrade -reconfigure; \
-	terraform destroy -input=false -var-file="$(TFVARS_FILE)" -auto-approve; \
-	EXIT_CODE=$$?; \
-	rm $(env)-backend.tf; \
-	if [ $$EXIT_CODE -ne 0 ]; then \
-		echo "❌ Terraform destroy failed in $(1) with exit code $$EXIT_CODE"; \
-		exit $$EXIT_CODE; \
-	fi
-endef
-
 # Macro to run terraform fmt in a given module
 define terraform_fmt_check
 	cd components/$(1); \
+	echo "⏳ Waiting for KMS Key ARN output from CloudFormation..."; \
+	while true; do \
+		KMS_ARN=$$(awslocal cloudformation describe-stacks \
+			--stack-name state-stack \
+			--query "Stacks[0].Outputs[?OutputKey=='KmsKeyId'].OutputValue" \
+			--output text); \
+		if [ "$$KMS_ARN" != "None" ] && [ -n "$$KMS_ARN" ]; then \
+			break; \
+		fi; \
+		echo "🔄 KMS Key ARN not yet available, retrying in 2s..."; \
+		sleep 2; \
+	done; \
+	echo "✅ Got KMS ARN: $$KMS_ARN"; \
 	cp $(BACKEND_FILE) .; \
+	sed -i "s|^ *kms_key_id *= *.*|    kms_key_id = \"$$KMS_ARN\"|" $(env)-backend.tf; \
 	terraform init -upgrade -reconfigure; \
 	terraform fmt; \
 	mv $(env)-backend.tf $(BACKEND_FILE)
@@ -112,32 +106,51 @@ endef
 # Macro to run terraform validate in a given module
 define terraform_validate_check
 	cd components/$(1); \
+	echo "⏳ Waiting for KMS Key ARN output from CloudFormation..."; \
+	while true; do \
+		KMS_ARN=$$(awslocal cloudformation describe-stacks \
+			--stack-name state-stack \
+			--query "Stacks[0].Outputs[?OutputKey=='KmsKeyId'].OutputValue" \
+			--output text); \
+		if [ "$$KMS_ARN" != "None" ] && [ -n "$$KMS_ARN" ]; then \
+			break; \
+		fi; \
+		echo "🔄 KMS Key ARN not yet available, retrying in 2s..."; \
+		sleep 2; \
+	done; \
+	echo "✅ Got KMS ARN: $$KMS_ARN"; \
 	cp $(BACKEND_FILE) .; \
+	sed -i "s|^ *kms_key_id *= *.*|    kms_key_id = \"$$KMS_ARN\"|" $(env)-backend.tf; \
 	terraform init -upgrade -reconfigure; \
 	terraform validate; \
 	rm $(env)-backend.tf
 endef
 
+
 # Apply all modules in order - make apply_all env=dev
 apply_all:
 	$(call terraform_apply,vpc)
+	$(call terraform_apply,sns_sqs)
 	$(call terraform_apply,ecs)
 	$(call terraform_apply,rds)
 	$(call terraform_apply,dynamoDB)
-	$(call terraform_apply,sns_sqs)
 	@echo "✅ All Terraform modules applied successfully."
 
-# Destroy all modules in reverse order - make destroy_all env=dev
-destroy_all:
-	$(call terraform_apply,vpc)
-	@echo "🧹 All Terraform modules destroyed successfully."
 
 # Format all modules - make fmt_all env=dev
 fmt_all:
 	$(call terraform_apply,vpc)
+	$(call terraform_apply,sns_sqs)
+	$(call terraform_apply,ecs)
+	$(call terraform_apply,rds)
+	$(call terraform_apply,dynamoDB)
 	@echo "✨ All Terraform modules formatted successfully."
 
 # Validate all components - make validate_all env=dev
 validate_all:
 	$(call terraform_apply,vpc)
+	$(call terraform_apply,sns_sqs)
+	$(call terraform_apply,ecs)
+	$(call terraform_apply,rds)
+	$(call terraform_apply,dynamoDB)
 	@echo "✅ All Terraform modules validated successfully."

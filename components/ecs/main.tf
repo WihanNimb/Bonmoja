@@ -21,6 +21,9 @@ module "ecs_cluster" {
       weight = 50
     }
   }
+
+  create_cloudwatch_log_group = true
+  cloudwatch_log_group_name   = "test_ecs_lg"
 }
 
 resource "aws_security_group" "ecs_tasks" {

@@ -53,3 +53,22 @@ resource "aws_security_group" "rds_sg" {
   }
 
 }
+
+resource "aws_cloudwatch_metric_alarm" "rds_cpu_high" {
+  alarm_name          = "${var.identifier}-High-CPU"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 5
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/RDS"
+  period              = 60
+  statistic           = "Average"
+  threshold           = 80
+  alarm_description   = "Alarm when RDS CPU usage is greater than 80% for 5 minutes"
+
+  dimensions = {
+    DBInstanceIdentifier = var.identifier
+  }
+
+  alarm_actions = [data.terraform_remote_state.sns_sqs.outputs.sns_topic_arn]  
+  ok_actions    = [data.terraform_remote_state.sns_sqs.outputs.sns_topic_arn]  
+}

@@ -62,3 +62,22 @@ module "sns_topic" {
     }
   }
 }
+
+resource "aws_cloudwatch_metric_alarm" "sqs_queue_depth_high" {
+  alarm_name          = "${local.full_sqs_name}-queue-depth-high"
+  alarm_description   = "Alarm when SQS queue depth exceeds 100 messages"
+  namespace           = "AWS/SQS"
+  metric_name         = "ApproximateNumberOfMessagesVisible"
+  statistic           = "Average"
+  period              = 300                # 5 minutes
+  evaluation_periods  = 2                  # 2 periods of 5 mins = 10 mins
+  threshold           = 100
+  comparison_operator = "GreaterThanThreshold"
+
+  dimensions = {
+    QueueName = module.sqs_queue.queue_name
+  }
+
+  alarm_actions = [module.sns_topic.topic_arn]
+  ok_actions    = [module.sns_topic.topic_arn]
+}
