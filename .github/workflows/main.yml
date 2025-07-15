@@ -18,14 +18,20 @@ jobs:
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
 
-      - name: Configure fake AWS credentials (for LocalStack)
+      - name: install localstacks
+        run: python3 -m pip install --upgrade localstack
+
+      - name: export auth token
+        run: export LOCALSTACK_AUTH_TOKEN="ls-lobifEKi-xIwa-KefA-3555-bEFo66139c56"
+
+      - name: Configure AWS credentials (for LocalStack)
         run: |
-          mkdir -p ~/.aws
-          echo "[default]" > ~/.aws/credentials
-          echo "aws_access_key_id = test" >> ~/.aws/credentials
-          echo "aws_secret_access_key = test" >> ~/.aws/credentials
-          echo "[default]" > ~/.aws/config
-          echo "region = us-east-1" >> ~/.aws/config
+          export AWS_ACCESS_KEY_ID="test"
+          export AWS_SECRET_ACCESS_KEY="test"
+          export AWS_DEFAULT_REGION="sa-east-1"
+
+      - name: start local LocalStack
+        run: localstack start
 
       - name: Terraform Validate
         run: make validate component=vpc env=dev

@@ -34,8 +34,8 @@ plan:
 apply:
 	cd components/${component}; \
 	cp backend/${env}-backend.tf .; \
-	tflocal init -upgrade -reconfigure; \
-	tflocal apply -input=false -var-file="../../vars/${env}.tfvars" -auto-approve; \
+	terraform init -upgrade -reconfigure; \
+	terraform apply -input=false -var-file="../../vars/${env}.tfvars" -auto-approve; \
 	TERRAFORM_APPLY_EXIT_CODE=$$?; \
 	rm ${env}-backend.tf; \
 	echo "Terraform Apply Exit Code: $$TERRAFORM_APPLY_EXIT_CODE"; \
