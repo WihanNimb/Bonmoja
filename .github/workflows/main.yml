@@ -19,7 +19,7 @@ jobs:
         uses: hashicorp/setup-terraform@v3
 
       - name: install localstacks
-        run: python3 -m pip install --upgrade localstack
+        run: pip install --upgrade localstack
 
       - name: export auth token
         run: export LOCALSTACK_AUTH_TOKEN="ls-lobifEKi-xIwa-KefA-3555-bEFo66139c56"
@@ -31,7 +31,7 @@ jobs:
           export AWS_DEFAULT_REGION="sa-east-1"
 
       - name: start local LocalStack
-        run: localstack start
+        run: localstack start &
 
       - name: Terraform Validate
         run: make validate component=vpc env=dev
