@@ -10,8 +10,8 @@ init:
 validate:
 	cd components/${component}; \
 	cp backend/${env}-backend.tf .; \
-	terraform init -upgrade -reconfigure; \
-	terraform validate; \
+	tflocal init -upgrade -reconfigure; \
+	tflocal validate; \
 	rm ${env}-backend.tf
 
 fmt-check:
