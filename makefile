@@ -60,11 +60,20 @@ BACKEND_FILE := backend/$(env)-backend.tf
 # Macro to run terraform apply in a given module
 define terraform_apply
 	cd components/$(1); \
+	echo "⏳ Waiting for KMS Key ARN output from CloudFormation..."; \
+	while true; do \
+		KMS_ARN=$$(awslocal cloudformation describe-stacks \
+			--stack-name state-stack \
+			--query "Stacks[0].Outputs[?OutputKey=='KmsKeyId'].OutputValue" \
+			--output text); \
+		if [ "$$KMS_ARN" != "None" ] && [ -n "$$KMS_ARN" ]; then \
+			break; \
+		fi; \
+		echo "🔄 KMS Key ARN not yet available, retrying in 2s..."; \
+		sleep 2; \
+	done; \
+	echo "✅ Got KMS ARN: $$KMS_ARN"; \
 	cp $(BACKEND_FILE) .; \
-	KMS_ARN=$$(awslocal cloudformation describe-stacks \
-		--stack-name state-stack \
-		--query "Stacks[0].Outputs[?OutputKey=='KmsKeyId'].OutputValue" \
-		--output text); \
 	sed -i "s|^ *kms_key_id *= *.*|    kms_key_id = \"$$KMS_ARN\"|" $(env)-backend.tf; \
 	terraform init -upgrade -reconfigure; \
 	terraform apply -input=false -var-file="$(TFVARS_FILE)" -auto-approve; \
@@ -75,6 +84,7 @@ define terraform_apply
 		exit $$EXIT_CODE; \
 	fi
 endef
+
 
 # Macro to run terraform destroy in a given module
 define terraform_destroy
