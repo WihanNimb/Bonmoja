@@ -33,6 +33,7 @@ To make any changes, navigate to the appropriate directory and update the config
 ├── scripts/                  # Health check script
 ├── aws_dependencies/         # CloudFormation template for state backend (S3 & KMS)
 ├── Makefile                  # Automated deployment script
+├── variables.tf              # Shared variables file
 ├── README.md                 
 └── SOLUTION.md
 

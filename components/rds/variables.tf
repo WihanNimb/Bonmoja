@@ -1,46 +1,63 @@
 #vpc
 variable "region" {
-  
+  description = "region to use"
+  default     = "sa-east-1"   
 }
 
 variable "vpc_name" {
-  
+  description = "name of the vpc"
+  default     = "wihan-test-vpc" 
 }
 
 variable "vpc_cidr" {
-  
+  description = "vpc cidr rang to use"
+  default     = "192.168.0.0/24"
 }
 
 variable "subnet_newbits" {
-  
+  description = "subnet newbits to use"
+  default     = [2, 3, 3]
 }
 
 variable "AZ_Total" {
-  
+  type        = number
+  description = "No AZ to usey"
+  default     = 2  
 }
 
 variable "pub_sub_total" {
-  
+  type        = number
+  description = "No public subnets to deply"
+  default     = 1
 }
 
 variable "pvt_sub_total" {
-  
+  type        = number
+  description = "No private subnets to deply"
+  default     = 2
 }
 
 variable "enable_nat_gateway" {
-  
+  type        = bool
+  description = "Deploy nat"
+  default     = true  
 }
 
 variable "single_nat_gateway" {
-  
+  type        = bool
+  description = "Single nat"
+  default     = true  
 }
 
 variable "one_nat_gateway_per_az" {
-  
+  type        = bool
+  description = "Multi-AZ nat"
+  default     = false  
 }
 
 variable "env" {
-  
+  type        = string
+  description = "environment deploying to"  
 }
 
 
@@ -157,16 +174,22 @@ variable "multi_az" {
 
 # ecs
 variable "cluster_name" {
-  
+  type        = string
+  description = "ecs cluster name"
+  default     = "test"  
 }
 
 
 # dynamo DB
 variable "dynamo_DB_name" {
-  
+  type        = string
+  description = "dynamoDB name"
+  default     = "test-DynamoDB"  
 }
 
 variable "billing_mode" {
-  
+  type        = string
+  description = "Billing mode used"
+  default     = "PAY_PER_REQUEST"  
 }
 

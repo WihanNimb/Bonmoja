@@ -5,22 +5,22 @@ SHELL := /bin/bash
 validate:
 	cd components/${component}; \
 	cp backend/${env}-backend.tf .; \
-	tflocal init -upgrade -reconfigure; \
-	tflocal validate; \
+	terraform init -upgrade -reconfigure; \
+	terraform validate; \
 	rm ${env}-backend.tf
 
 fmt-check:
 	cd components/${component}; \
 	cp backend/${env}-backend.tf .; \
-	tflocal init -upgrade -reconfigure; \
-	tflocal fmt; \
+	terraform init -upgrade -reconfigure; \
+	terraform fmt; \
 	mv ${env}-backend.tf backend/
 
 plan:
 	cd components/${component}; \
 	cp backend/${env}-backend.tf .; \
-	tflocal init -upgrade -reconfigure; \
-	tflocal plan -input=false -var-file="../../vars/${env}.tfvars" -compact-warnings; \
+	terraform init -upgrade -reconfigure; \
+	terraform plan -input=false -var-file="../../vars/${env}.tfvars" -compact-warnings; \
 	TERRAFORM_PLAN_EXIT_CODE=$$?; \
 	rm ${env}-backend.tf; \
 	echo "Terraform Plan Exit Code: $$TERRAFORM_PLAN_EXIT_CODE"; \
@@ -39,12 +39,21 @@ apply:
 destroy:
 	cd components/${component}; \
 	cp backend/${env}-backend.tf .; \
-	tflocal init -upgrade -reconfigure; \
-	tflocal destroy -input=false -var-file="../../vars/${env}.tfvars" -auto-approve; \
+	terraform init -upgrade -reconfigure; \
+	terraform destroy -input=false -var-file="../../vars/${env}.tfvars" -auto-approve; \
 	TERRAFORM_DESTROY_EXIT_CODE=$$?; \
 	rm ${env}-backend.tf; \
 	echo "Terraform Destroy Exit Code: $$TERRAFORM_DESTROY_EXIT_CODE"; \
 	exit $$TERRAFORM_DESTROY_EXIT_CODE
+
+tflint:
+	tflint --init; \
+	tflint -v; \
+	tflint --chdir components/${component} --var-file="../../vars/${env}.tfvars"
+
+checkov:
+	cd components/${component}; \
+	checkov -d . -s --download-external-modules true
 
 
 # Variables
@@ -139,18 +148,18 @@ apply_all:
 
 # Format all modules - make fmt_all env=dev
 fmt_all:
-	$(call terraform_apply,vpc)
-	$(call terraform_apply,sns_sqs)
-	$(call terraform_apply,ecs)
-	$(call terraform_apply,rds)
-	$(call terraform_apply,dynamoDB)
+	$(call terraform_fmt_check,vpc)
+	$(call terraform_fmt_check,sns_sqs)
+	$(call terraform_fmt_check,ecs)
+	$(call terraform_fmt_check,rds)
+	$(call terraform_fmt_check,dynamoDB)
 	@echo "✨ All Terraform modules formatted successfully."
 
 # Validate all components - make validate_all env=dev
 validate_all:
-	$(call terraform_apply,vpc)
-	$(call terraform_apply,sns_sqs)
-	$(call terraform_apply,ecs)
-	$(call terraform_apply,rds)
-	$(call terraform_apply,dynamoDB)
+	$(call terraform_validate_check,vpc)
+	$(call terraform_validate_check,sns_sqs)
+	$(call terraform_validate_check,ecs)
+	$(call terraform_validate_check,rds)
+	$(call terraform_validate_check,dynamoDB)
 	@echo "✅ All Terraform modules validated successfully."
