@@ -64,7 +64,7 @@ Due to current LocalStack limitations, ECS Fargate deployments via GitHub Action
 4. Update ECS Service using `aws ecs update-service` or Terraform
 5. Run a health check script post-deploy
 
-The pipeline is still defined in `.github/workflows/deploy.yml`, and each step can be executed individually if targeting a real AWS account.
+The pipeline is still defined in `.github/workflows/main.yml`.
 
 
 ## 📊 Monitoring & Observability

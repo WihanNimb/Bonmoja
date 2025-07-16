@@ -38,12 +38,3 @@ jobs:
           awslocal cloudformation create-stack --stack-name state-stack --template-body file://aws_dependancies/state-stack.yml
           make apply_all env=dev
           curl http://localhost:5678/  
-
-      # - name: create S3 bucket for Terraform state
-      #   run: awslocal cloudformation create-stack --stack-name state-stack --template-body file://aws_dependancies/state-stack.yml
-
-      # - name: Terraform Validate
-      #   run: make validate component=vpc env=dev
-
-      # - name: Terraform apply
-      #   run: make apply component=vpc env=dev
