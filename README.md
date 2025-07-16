@@ -7,7 +7,7 @@
 - [Makefile Commands](#-makefile-commands)
 - [Architecture Overview](#-architecture-overview)
 - [Rationale](#-rationale)
-- [Known Limitations](#-known-limitations)
+- [Known Limitations](#%EF%B8%8F-known-limitations)
 ## Getting Started
 
 ### Project Structure
