@@ -125,7 +125,6 @@ http://localhost:5678/
 and logs a warning if the service is unresponsive.
 
 ---
-## 🧰 Makefile Commands
 
 ## 🧰 Makefile Commands
 
