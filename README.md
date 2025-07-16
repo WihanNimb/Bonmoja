@@ -1,5 +1,5 @@
 # Bonmoja Take Home Assessment
-![Terraform](https://img.shields.io/badge/IaC-Terraform-623CE4?logo=terraform)![LocalStack](https://img.shields.io/badge/LocalStack-Running-blue)
+![Terraform](https://img.shields.io/badge/IaC-Terraform-623CE4?logo=terraform) ![LocalStack](https://img.shields.io/badge/LocalStack-Running-blue)
 ## 📚 Table of Contents
 
 - [Getting Started](#getting-started)
@@ -30,7 +30,7 @@ To make any changes, navigate to the appropriate directory and update the config
 │   └── dynamoDB/             # NoSQL session store
 ├── vars/                     # tfvars files per environment (dev/qa/prod)
 ├── scripts/                  # Health check script
-├── aws_dependancies/         # CloudFormation template for state backend (S3 & KMS)
+├── aws_dependencies/         # CloudFormation template for state backend (S3 & KMS)
 ├── Makefile                  # Automated deployment script
 ├── README.md                 
 └── SOLUTION.md
@@ -125,7 +125,7 @@ and logs a warning if the service is unresponsive.
 
 ---
 
-## 🛠️ Makefile Commands
+## 	🧰 Makefile Commands
 
 This project includes a `Makefile` to streamline repetitive Terraform tasks like formatting, validating, applying, and destroying modules. It abstracts away complexity by handling backend setup, KMS ARN injection, and environment-specific paths.
 
