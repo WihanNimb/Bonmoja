@@ -206,4 +206,4 @@ This rationale reflects a balance between best practices, simplicity, and clarit
 
 ## ⚠️ Known Limitations
 
-ECS Fargate CI/CD deployment via GitHub Actions is not fully testable in LocalStack due to unsupported features. However, the pipeline is included and production-ready for AWS.
+ECS Fargate CI/CD deployment via GitHub Actions is not fully testable in LocalStack due to unsupported features. However, the pipeline is included at `.github/workflows/main.yml`.
