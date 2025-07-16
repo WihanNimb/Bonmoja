@@ -8,7 +8,7 @@ This document outlines the architectural decisions, trade-offs, security measure
 
 This solution provisions a secure and scalable AWS infrastructure to host a containerized HTTP service using ECS Fargate, integrated with RDS, SQS, SNS, and DynamoDB. Infrastructure is defined as modular, reusable Terraform code, with each major component (VPC, ECS, RDS, etc.) managed independently and remotely via its own state file.
 
-### 🧩 Core Components
+### Core Components
 
 - **VPC** with public and private subnets, NAT Gateway, and routing tables  
 - **ECS Fargate Cluster** hosting a containerized `http-echo` service  
@@ -19,13 +19,13 @@ This solution provisions a secure and scalable AWS infrastructure to host a cont
 
 > 📌 *See architecture diagram in [`README.md`](./README.md#-architecture-overview)*
 
----
+
 
 ## ⚖️ ECS Networking Trade-Off: Public vs. Private
 
 Initially, the ECS task was deployed to public subnets with `assign_public_ip = true`, allowing direct access for testing purposes. While this works for rapid iteration, it is **not production-appropriate** due to the public exposure of the service.
 
-### ✅ Recommended Production Approach
+### Recommended Production Approach
 
 - Place ECS tasks in private subnets  
 - Deploy an **Application Load Balancer (ALB)**  
@@ -34,7 +34,7 @@ Initially, the ECS task was deployed to public subnets with `assign_public_ip = 
 
 This ensures internet access is strictly mediated through the ALB while keeping workloads isolated.
 
----
+
 
 ## 🔐 IAM & Security Controls
 
@@ -52,7 +52,20 @@ Future enhancements:
 
 - 🔐 AWS Secrets Manager for credentials  
 - 🔐 Fine-grained IAM policies  
----
+
+
+## 🚧 CI/CD Limitation (LocalStack)
+
+Due to current LocalStack limitations, ECS Fargate deployments via GitHub Actions could not be fully executed locally. In a production AWS environment, the CI/CD pipeline would:
+
+1. Build and push the container image to Amazon ECR
+2. Validate Terraform via `terraform validate` and `tflint`
+3. Apply Terraform to provision infrastructure
+4. Update ECS Service using `aws ecs update-service` or Terraform
+5. Run a health check script post-deploy
+
+The pipeline is still defined in `.github/workflows/deploy.yml`, and each step can be executed individually if targeting a real AWS account.
+
 
 ## 📊 Monitoring & Observability
 
@@ -67,7 +80,6 @@ Suggested improvements:
 - Alarm-based Auto Scaling  
 - Centralized log aggregation (e.g., ELK stack, Datadog)
 
----
 
 ## 💸 AWS Cost Optimization Strategies
 
@@ -76,20 +88,19 @@ Suggested improvements:
 - **What it is**: Spare EC2 capacity offered at a major discount (~90%). ECS supports Spot tasks, which dramatically reduce compute costs.  
 - **Trade-offs**: Spot tasks can be interrupted by AWS with a 2-minute warning. Best for stateless, fault-tolerant services.
 
----
 
 ### 2. Use Savings Plans or Reserved Instances
 
 - **What it is**: Commit to consistent usage for 1–3 years to receive discounts up to ~72% on Fargate, EC2, or RDS usage.  
 - **Trade-offs**: Requires forecasting. You’re locked into usage whether or not you scale down, limiting flexibility.
 
----
+
 
 ## 🧮 Cost Optimization Focus: RDS
 
 **Chosen Service**: RDS PostgreSQL
 
-### 💡 Cost-Optimization Techniques:
+### Cost-Optimization Techniques:
 
 - **Reserved Instances**: Save 60–70% by pre-paying and committing usage  
 - **Right-Sizing**: Monitor CPU and IOPS via CloudWatch and Performance Insights  
@@ -98,7 +109,7 @@ Suggested improvements:
 
 > ⚠️ *Trade-offs:* Committed usage limits flexibility. Downscaling may reduce performance. Aurora is not always available or instant-on.
 
----
+
 
 ## 📝 Final Notes
 
@@ -109,6 +120,5 @@ Suggested improvements:
   - Secrets managed via AWS Secrets Manager  
   - Interconnected services (e.g., ECS consuming from SQS, storing in RDS/DynamoDB)
 
----
 
 This solution demonstrates a production-minded infrastructure setup optimized for clarity, modularity, and cost efficiency — with strong local prototyping support via LocalStack.

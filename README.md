@@ -4,12 +4,13 @@
 
 - [Getting Started](#getting-started)
 - [Setup Instructions](#️-setup-instructions)
-- [Makefile Commands](#️-makefile-commands)
+- [Makefile Commands](#-makefile-commands)
 - [Architecture Overview](#-architecture-overview)
 - [Rationale](#-rationale)
+- [Known Limitations](#-known-limitations)
 ## Getting Started
 
-### 📂 Project Structure
+### Project Structure
 This repository is structured into components— each maintaining its own Terraform state.
 
 To make any changes, navigate to the appropriate directory and update the configuration as needed.
@@ -124,8 +125,9 @@ http://localhost:5678/
 and logs a warning if the service is unresponsive.
 
 ---
+## 🧰 Makefile Commands
 
-## 	🧰 Makefile Commands
+## 🧰 Makefile Commands
 
 This project includes a `Makefile` to streamline repetitive Terraform tasks like formatting, validating, applying, and destroying modules. It abstracts away complexity by handling backend setup, KMS ARN injection, and environment-specific paths.
 
@@ -155,7 +157,7 @@ This allows you to reuse the same infrastructure code across multiple environmen
 
 > ℹ️ The Makefile automatically waits for the `KmsKeyId` output from CloudFormation and injects it into the backend configuration before initialization. This ensures secure remote state handling per module.
 
----
+
 ## 🧭 Architecture Overview
 
 ![Architecture Diagram](.assets/architecture.png)
@@ -202,3 +204,7 @@ Key design choices:
   While the services are not currently wired together, the deployed infrastructure lays the groundwork for easily connecting application logic in future iterations (e.g., ECS consuming from SQS, writing to DynamoDB).
 
 This rationale reflects a balance between best practices, simplicity, and clarity — suitable for demonstrating infrastructure skills without overengineering.
+
+## ⚠️ Known Limitations
+
+ECS Fargate CI/CD deployment via GitHub Actions is not fully testable in LocalStack due to unsupported features like ALB and service-linked roles. However, the pipeline is included and production-ready for AWS.
