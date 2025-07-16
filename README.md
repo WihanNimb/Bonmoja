@@ -9,7 +9,7 @@
 - [Rationale](#-rationale)
 - [Known Limitations](#%EF%B8%8F-known-limitations)
 ## Getting Started
-- [Demo video](https://www.docker.com/)https://www.loom.com/share/2b2ece534fdc4fc5bb7f1f5857bbac31?sid=fb9ee0db-75f9-4d1e-80d6-35e34d0bffac
+- [Demo video](https://www.loom.com/share/2b2ece534fdc4fc5bb7f1f5857bbac31?sid=fb9ee0db-75f9-4d1e-80d6-35e34d0bffac)
 
 ### Project Structure
 This repository is structured into components— each maintaining its own Terraform state.
