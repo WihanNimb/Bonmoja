@@ -9,6 +9,7 @@
 - [Rationale](#-rationale)
 - [Known Limitations](#%EF%B8%8F-known-limitations)
 ## Getting Started
+- [Demo video](https://www.docker.com/)https://www.loom.com/share/2b2ece534fdc4fc5bb7f1f5857bbac31?sid=fb9ee0db-75f9-4d1e-80d6-35e34d0bffac
 
 ### Project Structure
 This repository is structured into components— each maintaining its own Terraform state.
@@ -82,7 +83,7 @@ This step creates the S3 bucket and KMS key used for Terraform remote state.
 ```bash
 awslocal cloudformation create-stack \
   --stack-name state-stack \
-  --template-body file://aws_dependancies/state-stack.yml
+  --template-body file://aws_dependencies/state-stack.yml
 ```
 
 The system automatically polls and extracts the `KmsKeyId` ARN to inject into each module’s backend config.
